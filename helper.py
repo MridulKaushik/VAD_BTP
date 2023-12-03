@@ -19,6 +19,7 @@ def record_Audio(filename, duration):
     
     recording_state = st.session_state.get("recording_state", False)
     recording_info_placeholder = st.empty()
+    stop_button_placeholder = st.empty()
     if recording_state:
         
         recording_info_placeholder.info("Recording... ")
@@ -42,15 +43,21 @@ def record_Audio(filename, duration):
                             output_device_index=default_output_device_index)
             
             
-            stop_button = st.button("Stop Recording")
-                
+            if recording_state:
+                stop_button = st.button("Stop Recording")
+            else:
+                stop_button_placeholder.empty()
+                        
             for _ in range(0, RATE // CHUNK * RECORD_TIME):
                 
                 f.writeframes(stream.read(CHUNK))
                 
                 if stop_button:
-                    break
-                    
+                    stop_button = st.empty()
+                    st.session_state["recording_done"] = True
+                    recording_info_placeholder.info("Recording Stopped")
+                    stream.close()
+                    p.terminate()                    
             
             recording_info_placeholder.success("Recording Completed\nThese are the results:")
             
